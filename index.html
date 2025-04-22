@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hoàn Thành Mọi Việc Không Hề Khó - David Allen</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #111;
+            color: #fff;
+            overflow: hidden;
+        }
+        
+        .slideshow-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .slide {
+            display: none;
+            width: 90%;
+            max-width: 1280px;
+            height: 90%;
+            max-height: 720px;
+            position: relative;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            transition: transform 0.5s ease-in-out;
+        }
+        
+        .slide iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 100;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 10px 20px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .control-btn {
+            background-color: transparent;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        
+        .control-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .slide-count {
+            display: flex;
+            align-items: center;
+            color: white;
+            font-size: 14px;
+            padding: 0 10px;
+        }
+        
+        .slide-thumbnails {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 80%;
+            overflow-x: auto;
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .slide-thumbnails:hover {
+            opacity: 1;
+        }
+        
+        .thumbnail {
+            width: 100px;
+            height: 56px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .thumbnail.active {
+            border-color: #3B82F6;
+            transform: scale(1.1);
+        }
+        
+        .transition-fade {
+            animation: fadeEffect 0.5s;
+        }
+        
+        @keyframes fadeEffect {
+            from { opacity: 0.3; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .fullscreen-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s;
+        }
+        
+        .fullscreen-btn:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+        
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0F172A;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+        
+        .loading-text {
+            margin-top: 20px;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #3B82F6;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background-color: #3B82F6;
+            transition: width 0.3s ease-out;
+            z-index: 101;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="spinner"></div>
+        <div class="loading-text">Đang tải bài thuyết trình...</div>
+    </div>
+    
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <!-- Slideshow Container -->
+    <div class="slideshow-container" id="slideshowContainer">
+        <!-- Slides will be inserted here by JavaScript -->
+    </div>
+    
+    <!-- Thumbnails -->
+    <div class="slide-thumbnails" id="slideThumbnails">
+        <!-- Thumbnails will be inserted here by JavaScript -->
+    </div>
+    
+    <!-- Controls -->
+    <div class="controls">
+        <button class="control-btn" id="prevBtn" title="Slide trước">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        
+        <div class="slide-count">
+            <span id="currentSlide">1</span>/<span id="totalSlides">10</span>
+        </div>
+        
+        <button class="control-btn" id="nextBtn" title="Slide tiếp theo">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        
+        <button class="control-btn" id="thumbnailBtn" title="Hiển thị thumbnails">
+            <i class="fas fa-th"></i>
+        </button>
+    </div>
+    
+    <!-- Fullscreen Button -->
+    <button class="fullscreen-btn" id="fullscreenBtn" title="Toàn màn hình">
+        <i class="fas fa-expand"></i>
+    </button>
+    
+    <script>
+        // Slide URLs - Thay thế bằng URL thực tế của các slide
+        const slideUrls = [
+            // URL của các slide từ bài thuyết trình đã tạo
+            // Đây là nơi bạn sẽ thêm đường dẫn đến các slide
+            "/slide1.html",
+            "/slide2.html",
+            "/slide3.html",
+            "/slide4.html",
+            "/slide5.html",
+            "/slide6.html",
+            "/slide7.html",
+            "/slide8.html",
+            "/slide9.html",
+            "/slide10.html"
+        ];
+        
+        // Thumbnail Images - Có thể tạo tự động từ slide hoặc dùng ảnh riêng
+        const thumbnailImages = [
+            // URL ảnh thumbnail cho mỗi slide
+            "/thumbnails/slide1.jpg",
+            "/thumbnails/slide2.jpg",
+            "/thumbnails/slide3.jpg",
+            "/thumbnails/slide4.jpg",
+            "/thumbnails/slide5.jpg",
+            "/thumbnails/slide6.jpg",
+            "/thumbnails/slide7.jpg",
+            "/thumbnails/slide8.jpg",
+            "/thumbnails/slide9.jpg",
+            "/thumbnails/slide10.jpg"
+        ];
+        
+        let currentSlideIndex = 0;
+        let isFullscreen = false;
+        
+        // Elements
+        const slideshowContainer = document.getElementById('slideshowContainer');
+        const slideThumbnails = document.getElementById('slideThumbnails');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const thumbnailBtn = document.getElementById('thumbnailBtn');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const currentSlideElement = document.getElementById('currentSlide');
+        const totalSlidesElement = document.getElementById('totalSlides');
+        const progressBar = document.getElementById('progressBar');
+        const loadingScreen = document.getElementById('loadingScreen');
+        
+        // Khởi tạo slideshow
+        function initSlideshow() {
+            totalSlidesElement.textContent = slideUrls.length;
+            
+            // Tạo các slide
+            slideUrls.forEach((url, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'slide';
+                slide.id = `slide-${index + 1}`;
+                
+                const iframe = document.createElement('iframe');
+                iframe.src = url;
+                iframe.title = `Slide ${index + 1}`;
+                iframe.loading = "lazy";
+                
+                slide.appendChild(iframe);
+                slideshowContainer.appendChild(slide);
+                
+                // Tạo thumbnails
+                const thumbnail = document.createElement('div');
+                thumbnail.className = 'thumbnail';
+                thumbnail.dataset.index = index;
+                
+                const thumbImg = document.createElement('img');
+                thumbImg.src = thumbnailImages[index] || url;
+                thumbImg.alt = `Thumbnail ${index + 1}`;
+                
+                thumbnail.appendChild(thumbImg);
+                slideThumbnails.appendChild(thumbnail);
+                
+                // Thêm sự kiện click cho thumbnail
+                thumbnail.addEventListener('click', () => {
+                    goToSlide(index);
+                });
+            });
+            
+            // Hiển thị slide đầu tiên
+            showSlide(currentSlideIndex);
+            
+            // Cập nhật progress bar
+            updateProgressBar();
+            
+            // Ẩn loading screen sau khi tải xong
+            setTimeout(() => {
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 500);
+            }, 1500);
+        }
+        
+        // Hiển thị slide
+        function showSlide(index) {
+            const slides = document.querySelectorAll('.slide');
+            const thumbnails = document.querySelectorAll('.thumbnail');
+            
+            // Ẩn tất cả các slide
+            slides.forEach(slide => {
+                slide.style.display = 'none';
+            });
+            
+            // Bỏ active class từ tất cả thumbnails
+            thumbnails.forEach(thumb => {
+                thumb.classList.remove('active');
+            });
+            
+            // Hiển thị slide hiện tại
+            slides[index].style.display = 'block';
+            slides[index].classList.add('transition-fade');
+            
+            // Highlight thumbnail hiện tại
+            thumbnails[index].classList.add('active');
+            
+            // Cập nhật vị trí hiện tại
+            currentSlideIndex = index;
+            currentSlideElement.textContent = index + 1;
+            
+            // Cập nhật progress bar
+            updateProgressBar();
+        }
+        
+        // Cập nhật progress bar
+        function updateProgressBar() {
+            const progress = ((currentSlideIndex + 1) / slideUrls.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+        
+        // Chuyển đến slide trước
+        function prevSlide() {
+            const newIndex = currentSlideIndex > 0 ? currentSlideIndex - 1 : slideUrls.length - 1;
+            showSlide(newIndex);
+        }
+        
+        // Chuyển đến slide tiếp theo
+        function nextSlide() {
+            const newIndex = currentSlideIndex < slideUrls.length - 1 ? currentSlideIndex + 1 : 0;
+            showSlide(newIndex);
+        }
+        
+        // Chuyển đến slide cụ thể
+        function goToSlide(index) {
+            showSlide(index);
+        }
+        
+        // Toggle fullscreen
+        function toggleFullscreen() {
+            if (!isFullscreen) {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.mozRequestFullScreen) {
+                    document.documentElement.mozRequestFullScreen();
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen();
+                } else if (document.documentElement.msRequestFullscreen) {
+                    document.documentElement.msRequestFullscreen();
+                }
+                fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+            }
+            isFullscreen = !isFullscreen;
+        }
+        
+        // Toggle thumbnails
+        function toggleThumbnails() {
+            const currentOpacity = window.getComputedStyle(slideThumbnails).opacity;
+            slideThumbnails.style.opacity = currentOpacity === '0' ? '1' : '0';
+        }
+        
+        // Event Listeners
+        prevBtn.addEventListener('click', prevSlide);
+        nextBtn.addEventListener('click', nextSlide);
+        thumbnailBtn.addEventListener('click', toggleThumbnails);
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowLeft':
+                    prevSlide();
+                    break;
+                case 'ArrowRight':
+                case ' ':
+                    nextSlide();
+                    break;
+                case 'f':
+                    toggleFullscreen();
+                    break;
+                case 't':
+                    toggleThumbnails();
+                    break;
+                case 'Escape':
+                    if (isFullscreen) {
+                        toggleFullscreen();
+                    }
+                    break;
+                default:
+                    // Nếu nhấn số từ 1-9, nhảy đến slide tương ứng
+                    const num = parseInt(e.key);
+                    if (!isNaN(num) && num >= 1 && num <= slideUrls.length) {
+                        goToSlide(num - 1);
+                    }
+                    break;
+            }
+        });
+        
+        // Xử lý sự kiện thay đổi fullscreen
+        document.addEventListener('fullscreenchange', () => {
+            isFullscreen = !!document.fullscreenElement;
+            fullscreenBtn.innerHTML = isFullscreen ? 
+                '<i class="fas fa-compress"></i>' : 
+                '<i class="fas fa-expand"></i>';
+        });
+        
+        // Khởi tạo slideshow khi trang đã tải xong
+        window.addEventListener('load', initSlideshow);
+    </script>
+</body>
+</html>
